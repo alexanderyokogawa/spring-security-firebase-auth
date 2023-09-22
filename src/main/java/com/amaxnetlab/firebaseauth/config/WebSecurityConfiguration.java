@@ -16,8 +16,11 @@ public class WebSecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
+                .cors() .and()
                 .authorizeHttpRequests(authorizeRequests ->
                         authorizeRequests
+                                .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
+                                .requestMatchers("/actuator/**").permitAll()
                                 .requestMatchers("/api/user/get/**").hasAuthority("ROLE_USER")
                                 .requestMatchers("/api/user/create").hasAuthority("ROLE_USER")
                                 .requestMatchers("/api/user/update/**").hasAuthority("ROLE_USER")

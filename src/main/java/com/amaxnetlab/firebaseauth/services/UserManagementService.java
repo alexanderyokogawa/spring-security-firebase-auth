@@ -1,13 +1,16 @@
 package com.amaxnetlab.firebaseauth.services;
 
 import com.amaxnetlab.firebaseauth.entities.User;
+import com.amaxnetlab.firebaseauth.dto.UserRoles;
 import com.amaxnetlab.firebaseauth.enums.Roles;
 import com.google.firebase.auth.*;
+import com.google.firebase.internal.Nullable;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -21,8 +24,8 @@ public class UserManagementService {
         return firebaseAuth.getUser(uid);
     }
 
-    public ListUsersPage listUsers() throws FirebaseAuthException {
-        return firebaseAuth.listUsers(null);
+    public ListUsersPage listUsers(@Nullable String pageToken, int maxResults) throws FirebaseAuthException {
+        return firebaseAuth.listUsers(pageToken, maxResults);
     }
 
     public UserRecord createUser(User user) throws FirebaseAuthException {
@@ -35,7 +38,11 @@ public class UserManagementService {
 
         UserRecord userRecord = firebaseAuth.createUser(request);
 
-        setUserRole(userRecord.getUid(), Roles.ROLE_USER);
+        UserRoles userRoles = new UserRoles();
+        userRoles.setRole(Roles.ROLE_USER);
+        userRoles.setUnitId(null);
+
+        setUserRole(userRecord.getUid(), userRoles);
 
         return userRecord;
     }
@@ -49,7 +56,11 @@ public class UserManagementService {
 
         UserRecord userRecord = firebaseAuth.updateUser(request);
 
-        setUserRole(userRecord.getUid(), Roles.ROLE_USER);
+        UserRoles userRoles = new UserRoles();
+        userRoles.setRole(Roles.ROLE_USER);
+        userRoles.setUnitId(null);
+
+        setUserRole(userRecord.getUid(), userRoles);
 
     }
 
@@ -61,7 +72,11 @@ public class UserManagementService {
         firebaseAuth.deleteUser(uid);
     }
 
-    public void setUserRole(String uid, Roles role) throws FirebaseAuthException {
-        firebaseAuth.setCustomUserClaims(uid, Collections.singletonMap("role", role.name()));
+    public void setUserRole(String uid, UserRoles userRoles) throws FirebaseAuthException {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("role", userRoles.getRole().toString());
+        claims.put("unitId", userRoles.getUnitId());
+
+        firebaseAuth.setCustomUserClaims(uid, claims);
     }
 }

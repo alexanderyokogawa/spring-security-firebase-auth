@@ -1,11 +1,12 @@
 package com.amaxnetlab.firebaseauth.resources;
 
 import com.amaxnetlab.firebaseauth.entities.User;
-import com.amaxnetlab.firebaseauth.enums.Roles;
+import com.amaxnetlab.firebaseauth.dto.UserRoles;
 import com.amaxnetlab.firebaseauth.services.UserManagementService;
 import com.google.firebase.auth.FirebaseAuthException;
 import com.google.firebase.auth.ListUsersPage;
 import com.google.firebase.auth.UserRecord;
+import com.google.firebase.internal.Nullable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -20,14 +21,14 @@ public class UserResource {
     private final UserManagementService userManagementService;
 
     @GetMapping("/me")
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")
+//    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN', 'ROLE_USER')")
     public UserRecord me(@AuthenticationPrincipal Jwt jwt) throws FirebaseAuthException {
         return userManagementService.getUser(jwt.getSubject());
     }
 
     @GetMapping("/list")
-    public ListUsersPage listUsers() throws FirebaseAuthException {
-        return userManagementService.listUsers();
+    public ListUsersPage listUsers(@Nullable String pageToken, int maxResults) throws FirebaseAuthException {
+        return userManagementService.listUsers(pageToken, maxResults);
     }
 
     @GetMapping("/get/{uid}")
@@ -54,9 +55,9 @@ public class UserResource {
     }
 
     @PutMapping("/role/{uid}")
-    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
-    public void setUserRole(@PathVariable String uid, Roles role) throws FirebaseAuthException {
-        userManagementService.setUserRole(uid, role);
+//    @PreAuthorize("hasAnyAuthority('ROLE_ADMIN')")
+    public void setUserRole(@PathVariable String uid, @RequestBody UserRoles userRoles) throws FirebaseAuthException {
+        userManagementService.setUserRole(uid, userRoles);
     }
 
     @GetMapping("/delete/{uid}")
